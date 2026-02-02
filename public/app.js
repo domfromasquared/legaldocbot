@@ -111,7 +111,7 @@ Signature: ______________________   Date: ____________
   }
 };
 
-// ---------------- UI state ----------------
+// ---------------- UI refs ----------------
 const assistantText = document.getElementById("assistantText");
 const choicesEl = document.getElementById("choices");
 const inputRow = document.getElementById("inputRow");
@@ -135,15 +135,12 @@ let audioChunks = [];
 function setAssistant(text) {
   assistantText.textContent = text;
 }
-
 function setHint(text) {
   hint.textContent = text || "";
 }
-
 function clearChoices() {
   choicesEl.innerHTML = "";
 }
-
 function addChoice(label, onClick) {
   const btn = document.createElement("button");
   btn.className = "choiceBtn";
@@ -151,24 +148,27 @@ function addChoice(label, onClick) {
   btn.addEventListener("click", onClick);
   choicesEl.appendChild(btn);
 }
-
 function showInput(show) {
   inputRow.style.display = show ? "flex" : "none";
 }
-
 function sanitizeOneLine(s) {
   return String(s || "").replace(/\s+/g, " ").trim();
 }
 
-// ---------------- OpenAI helpers (via backend) ----------------
+// ---------------- API helpers ----------------
 async function aiAsk(messages) {
   const res = await fetch("/api/respond", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages })
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "AI error");
+
+  // safer parsing if server returns non-json error pages
+  const text = await res.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
+
+  if (!res.ok) throw new Error(data.error || `AI error (${res.status})`);
   return data.output_text || "";
 }
 
@@ -176,9 +176,13 @@ async function transcribeAudio(blob) {
   const form = new FormData();
   form.append("audio", blob, "input.webm");
 
-  const res = await fetch("api/transcribe", { method: "POST", body: form });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Transcription error");
+  const res = await fetch("/api/transcribe", { method: "POST", body: form });
+
+  const text = await res.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
+
+  if (!res.ok) throw new Error(data.error || `Transcription error (${res.status})`);
   return data.text || "";
 }
 
@@ -267,14 +271,13 @@ async function handleAnswer(raw) {
   userInput.value = "";
 }
 
-// ---------------- Voice input (hold-to-record) ----------------
+// ---------------- Voice input ----------------
 async function startRecording() {
   try {
     setHint("Recording… release to stop.");
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioChunks = [];
 
-    // Some Safari versions are picky; remove mimeType if needed.
     try {
       mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
     } catch {
@@ -310,15 +313,19 @@ function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
 }
 
-// ---------------- Document preview / printing ----------------
+// ---------------- Doc preview ----------------
 function openDoc(title, text) {
   docTitle.textContent = title;
   docBody.textContent = text;
+
   docPreview.hidden = false;
+  docPreview.style.display = "flex"; // fallback
 }
 
 function closeDoc() {
   docPreview.hidden = true;
+  docPreview.style.display = "none"; // fallback
+
   docTitle.textContent = "";
   docBody.textContent = "";
 }
