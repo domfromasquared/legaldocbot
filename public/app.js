@@ -162,7 +162,7 @@ function sanitizeOneLine(s) {
 
 // ---------------- OpenAI helpers (via backend) ----------------
 async function aiAsk(messages) {
-  const res = await fetch("http://localhost:3000/api/respond", {
+  const res = await fetch("/api/respond", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ messages })
@@ -176,7 +176,7 @@ async function transcribeAudio(blob) {
   const form = new FormData();
   form.append("audio", blob, "input.webm");
 
-  const res = await fetch("http://localhost:3000/api/transcribe", { method: "POST", body: form });
+  const res = await fetch("api/transcribe", { method: "POST", body: form });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Transcription error");
   return data.text || "";
