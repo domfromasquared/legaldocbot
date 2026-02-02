@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+  />
+  <title>Legal Doc Bot (MVP)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+  <div class="brand">
+    <div class="logoDot"></div>
+    <div class="titleWrap">
+      <div class="title">Legal Doc Bot</div>
+      <div class="sub">Template interview → printable draft</div>
+    </div>
+  </div>
+  <div class="badge">Info, not advice</div>
+</header>
+
+
+    <main class="stage" aria-live="polite">
+      <section class="card">
+        <div class="assistant">
+  <div class="avatar">L</div>
+  <div class="assistantText" id="assistantText"></div>
+</div>
+
+
+        <div class="choices" id="choices"></div>
+
+        <!-- ✅ CHAT FIELD (INPUT + MIC + SEND) -->
+        <div class="inputRow" id="inputRow">
+          <input id="userInput" type="text" placeholder="Type your answer…" autocomplete="off" />
+          <button id="micBtn" class="iconBtn" title="Hold to talk">🎙️</button>
+          <button id="sendBtn" class="primaryBtn">Send</button>
+        </div>
+
+        <div class="hint" id="hint"></div>
+      </section>
+
+      <section class="docPreview" id="docPreview" hidden>
+        <div class="docTop">
+          <div class="docTitle" id="docTitle"></div>
+          <div class="docActions">
+            <button id="printBtn" class="primaryBtn">Print</button>
+            <button id="closeDocBtn" class="ghostBtn">Close</button>
+          </div>
+        </div>
+        <div class="docBody" id="docBody"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="small">
+        Drafts are template-based. For complex situations, consult a qualified attorney.
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
