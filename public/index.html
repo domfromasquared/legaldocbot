@@ -3,58 +3,86 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Legal Doc Bot (MVP)</title>
+  <title>Legal Doc Bot</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logoDot"></div>
-        <div class="titleWrap">
-          <div class="title">Legal Doc Bot</div>
-          <div class="sub">Template interview → printable draft</div>
-        </div>
-      </div>
-      <div class="badge">Info, not advice</div>
-    </header>
 
-    <main class="stage" aria-live="polite">
-      <section class="card">
-        <div class="assistant">
-          <div class="avatar">L</div>
-          <div class="assistantText" id="assistantText"></div>
-        </div>
+    <!-- HOME SCREEN -->
+    <section class="screen" id="homeScreen">
+      <header class="topbar">
+        <button class="iconCircle" id="homeMenuBtn" aria-label="Menu">≡</button>
+        <div class="pill">Legal Doc Bot</div>
+        <button class="iconCircle" id="newChatBtn" aria-label="New">✎</button>
+      </header>
 
-        <div class="choices" id="choices"></div>
+      <main class="homeMain">
+        <div class="homeTitle">Create a legal document draft</div>
+        <div class="homeSubtitle">Answer a few questions. Get a printable draft. Info, not advice.</div>
 
-        <div class="inputRow" id="inputRow">
-          <input id="userInput" type="text" placeholder="Type your answer…" autocomplete="off" />
-          <button id="micBtn" class="iconBtn" title="Hold to talk">🎙️</button>
-          <button id="sendBtn" class="primaryBtn">Send</button>
+        <button class="cta" id="startBtn">
+          <span>New Draft</span>
+          <span class="ctaArrow">→</span>
+        </button>
+
+        <div class="sectionRow">
+          <div class="sectionLabel">Document types</div>
         </div>
 
-        <div class="hint" id="hint"></div>
+        <div class="chips" id="docTypeChips"></div>
 
-        <!-- doc preview lives INSIDE the card so it can’t cover the whole page -->
-        <section class="docPreview" id="docPreview" hidden>
-          <div class="docTop">
-            <div class="docTitle" id="docTitle"></div>
-            <div class="docActions">
-              <button id="printBtn" class="primaryBtn">Print</button>
-              <button id="closeDocBtn" class="ghostBtn">Close</button>
+        <div class="sectionRow">
+          <div class="sectionLabel">Popular</div>
+        </div>
+
+        <div class="cards" id="popularCards"></div>
+      </main>
+
+      <footer class="footer">
+        Drafts are template-based. For complex situations, consult a qualified attorney.
+      </footer>
+    </section>
+
+    <!-- CHAT SCREEN -->
+    <section class="screen" id="chatScreen" hidden>
+      <header class="topbar">
+        <button class="iconCircle" id="backBtn" aria-label="Back">←</button>
+        <div class="pill" id="chatTitlePill">Draft</div>
+        <button class="iconCircle" id="restartBtn" aria-label="Restart">↻</button>
+      </header>
+
+      <main class="chatMain">
+        <div class="chatTitle" id="chatTitle">What do you want to draft?</div>
+
+        <div class="thread" id="thread" aria-live="polite"></div>
+
+        <!-- DOC PREVIEW OVERLAY (inside chat screen) -->
+        <section class="docSheet" id="docPreview" hidden>
+          <div class="docSheetTop">
+            <div class="docSheetTitle" id="docTitle"></div>
+            <div class="docSheetActions">
+              <button id="printBtn" class="btnPrimary">Print</button>
+              <button id="closeDocBtn" class="btnGhost">Close</button>
             </div>
           </div>
-          <div class="docBody" id="docBody"></div>
+          <div class="docSheetBody" id="docBody"></div>
         </section>
-      </section>
-    </main>
+      </main>
 
-    <footer class="footer">
-      <div class="small">
-        Drafts are template-based. For complex situations, consult a qualified attorney.
-      </div>
-    </footer>
+      <footer class="composer">
+        <div class="composerInner">
+          <div class="fieldWrap">
+            <input id="userInput" type="text" placeholder="Type here…" autocomplete="off" />
+            <textarea id="userTextarea" rows="3" placeholder="Type here…"></textarea>
+            <div class="errorText" id="errorText"></div>
+          </div>
+          <button id="micBtn" class="iconPlus" title="Hold to talk" aria-label="Voice">🎙️</button>
+          <button id="sendBtn" class="iconPlus" aria-label="Send">→</button>
+        </div>
+      </footer>
+    </section>
+
   </div>
 
   <script src="app.js"></script>
