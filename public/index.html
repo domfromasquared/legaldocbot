@@ -12,16 +12,16 @@
     <!-- HOME SCREEN -->
     <section class="screen" id="homeScreen">
       <header class="topbar">
-        <button class="iconCircle" id="homeMenuBtn" aria-label="Menu">≡</button>
+        <button type="button" class="iconCircle" id="homeMenuBtn" aria-label="Menu">≡</button>
         <div class="pill">Legal Doc Bot</div>
-        <button class="iconCircle" id="newChatBtn" aria-label="New">✎</button>
+        <button type="button" class="iconCircle" id="newChatBtn" aria-label="New">✎</button>
       </header>
 
       <main class="homeMain">
         <div class="homeTitle">Create a legal document draft</div>
         <div class="homeSubtitle">Answer a few questions. Get a printable draft. Info, not advice.</div>
 
-        <button class="cta" id="startBtn">
+        <button type="button" class="cta" id="startBtn">
           <span>New Draft</span>
           <span class="ctaArrow">→</span>
         </button>
@@ -47,9 +47,9 @@
     <!-- CHAT SCREEN -->
     <section class="screen" id="chatScreen" hidden>
       <header class="topbar">
-        <button class="iconCircle" id="backBtn" aria-label="Back">←</button>
+        <button type="button" class="iconCircle" id="backBtn" aria-label="Back">←</button>
         <div class="pill" id="chatTitlePill">Draft</div>
-        <button class="iconCircle" id="restartBtn" aria-label="Restart">↻</button>
+        <button type="button" class="iconCircle" id="restartBtn" aria-label="Restart">↻</button>
       </header>
 
       <main class="chatMain">
@@ -57,13 +57,14 @@
 
         <div class="thread" id="thread" aria-live="polite"></div>
 
-        <!-- DOC PREVIEW OVERLAY (inside chat screen) -->
+        <!-- DOC PREVIEW SHEET -->
         <section class="docSheet" id="docPreview" hidden>
           <div class="docSheetTop">
             <div class="docSheetTitle" id="docTitle"></div>
             <div class="docSheetActions">
-              <button id="printBtn" class="btnPrimary">Print</button>
-              <button id="closeDocBtn" class="btnGhost">Close</button>
+              <button type="button" id="downloadBtn" class="btnPrimary">Download</button>
+              <button type="button" id="printBtn" class="btnGhost">Print</button>
+              <button type="button" id="closeDocBtn" class="btnGhost">Close</button>
             </div>
           </div>
           <div class="docSheetBody" id="docBody"></div>
@@ -77,8 +78,8 @@
             <textarea id="userTextarea" rows="3" placeholder="Type here…"></textarea>
             <div class="errorText" id="errorText"></div>
           </div>
-          <button id="micBtn" class="iconPlus" title="Hold to talk" aria-label="Voice">🎙️</button>
-          <button id="sendBtn" class="iconPlus" aria-label="Send">→</button>
+          <button type="button" id="micBtn" class="iconPlus" title="Hold to talk" aria-label="Voice">🎙️</button>
+          <button type="button" id="sendBtn" class="iconPlus" aria-label="Send">→</button>
         </div>
       </footer>
     </section>
