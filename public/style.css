@@ -27,7 +27,8 @@
 
 *{ box-sizing:border-box; }
 html, body { height: 100%; margin: 0; }
-body { height: calc(var(--vh) * 100);
+body { 
+  height: calc(var(--vh) * 100);
   font-family: var(--font);
   overflow:hidden; /* no page scroll */
   background:
@@ -36,15 +37,16 @@ body { height: calc(var(--vh) * 100);
     var(--bg);
   background-size: 34px 34px;
   color: var(--text);
+  /* FIX: Remove default tap highlights on mobile */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .app {
   height: calc(var(--vh) * 100);
   display: flex;
   flex-direction: column;
-  padding-top: var(--safeTop);
-  padding-bottom: var(--safeBot);
   overflow: hidden;
+  position: relative; /* FIX: Establish stacking context */
 }
 
 /* screens */
@@ -52,8 +54,9 @@ body { height: calc(var(--vh) * 100);
   height:100%;
   display:grid;
   grid-template-rows: auto 1fr auto;
-  padding-top: var(--safeTop);
-  padding-bottom: var(--safeBot);
+  /* FIX: Remove duplicate padding that conflicts with .app */
+  position: relative;
+  z-index: 1;
 }
 
 /* top bar */
@@ -63,6 +66,9 @@ body { height: calc(var(--vh) * 100);
   justify-content:space-between;
   padding: 14px 14px 10px;
   gap: 10px;
+  /* FIX: Ensure topbar is above content but below doc sheet */
+  position: relative;
+  z-index: 10;
 }
 
 .iconCircle{
@@ -76,6 +82,17 @@ body { height: calc(var(--vh) * 100);
   align-items:center;
   justify-content:center;
   font-size: 18px;
+  /* FIX: Add button interaction styles */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.iconCircle:active {
+  transform: scale(0.95);
+  background: rgba(255,255,255,.95);
 }
 
 .pill{
@@ -95,7 +112,9 @@ body { height: calc(var(--vh) * 100);
 .homeMain{
   min-height:0;
   padding: 6px 14px 10px;
-  overflow:hidden;
+  overflow-y: auto; /* FIX: Enable scrolling */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* FIX: Smooth scrolling on iOS */
   display:flex;
   flex-direction:column;
   gap: 12px;
@@ -126,6 +145,17 @@ body { height: calc(var(--vh) * 100);
   justify-content:space-between;
   font-weight: 900;
   font-size: 15px;
+  /* FIX: Add button interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.cta:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 15px rgba(0,0,0,.16);
 }
 
 .ctaArrow{
@@ -170,6 +200,18 @@ body { height: calc(var(--vh) * 100);
   box-shadow: 0 8px 18px rgba(0,0,0,.06);
   font-weight: 800;
   font-size: 13px;
+  /* FIX: Add button interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.chip:active {
+  transform: scale(0.96);
+  background: rgba(255,255,255,.98);
 }
 
 .cards{
@@ -177,7 +219,9 @@ body { height: calc(var(--vh) * 100);
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   min-height:0;
-  overflow:hidden;
+  overflow-y: auto; /* FIX: Enable scrolling */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 10px;
 }
 
 .cardTile{
@@ -214,6 +258,17 @@ body { height: calc(var(--vh) * 100);
   color: white;
   font-weight: 900;
   width: 100%;
+  /* FIX: Add button interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.tileBtn:active {
+  transform: scale(0.97);
+  background: rgba(0,0,0,1);
 }
 
 .footer{
@@ -229,6 +284,8 @@ body { height: calc(var(--vh) * 100);
   overflow:hidden;
   display:flex;
   flex-direction:column;
+  position: relative; /* FIX: Establish stacking context for doc sheet */
+  z-index: 5;
 }
 
 .chatTitle{
@@ -264,6 +321,8 @@ body { height: calc(var(--vh) * 100);
   font-size: 14px;
   line-height: 1.25;
   box-shadow: 0 10px 22px rgba(0,0,0,.18);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .bubble.bot{
@@ -292,6 +351,9 @@ body { height: calc(var(--vh) * 100);
 .composer{
   padding: 10px 14px 14px;
   background: transparent;
+  /* FIX: Ensure composer stays above thread */
+  position: relative;
+  z-index: 20;
 }
 
 .composerInner{
@@ -318,11 +380,15 @@ body { height: calc(var(--vh) * 100);
   background: #111;
   color: rgba(255,255,255,.92);
   font-size: 14px;
+  font-family: var(--font);
+  /* FIX: Prevent iOS zoom on input focus */
+  font-size: 16px;
 }
 
 #userTextarea{
   display:none;
   resize:none;
+  max-height: 120px;
 }
 
 #userInput::placeholder, #userTextarea::placeholder{
@@ -334,6 +400,7 @@ body { height: calc(var(--vh) * 100);
   margin-top: 6px;
   font-size: 12px;
   color: rgba(255, 180, 180, .95);
+  padding: 0 4px;
 }
 
 .iconPlus{
@@ -348,30 +415,46 @@ body { height: calc(var(--vh) * 100);
   display:flex;
   align-items:center;
   justify-content:center;
+  flex-shrink: 0;
+  /* FIX: Add button interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.iconPlus:active {
+  transform: scale(0.94);
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
 }
 
 .iconPlus:disabled{
   opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* doc sheet overlay */
 .docSheet{
-  position:absolute;
+  position:fixed; /* FIX: Changed from absolute to fixed for better positioning */
   left: 14px;
   right: 14px;
-  top: 74px;               /* below topbar */
-  bottom: calc(98px + var(--safeBot)); /* above composer */
+  top: calc(74px + var(--safeTop)); /* FIX: Account for safe area */
+  bottom: calc(98px + var(--safeBot)); /* FIX: Account for safe area */
   border-radius: 24px;
-  background: rgba(20,20,20,.95);
+  background: rgba(20,20,20,.98); /* FIX: Slightly more opaque */
   color: rgba(255,255,255,.92);
   box-shadow: 0 22px 55px rgba(0,0,0,.45);
   overflow:hidden;
   display:flex;
   flex-direction:column;
-  z-index: 50;
+  z-index: 100; /* FIX: Ensure doc sheet is above everything */
 }
 
-.docSheet[hidden]{ display:none !important; }
+.docSheet[hidden]{ 
+  display:none !important; 
+}
 
 .docSheetTop{
   display:flex;
@@ -380,12 +463,15 @@ body { height: calc(var(--vh) * 100);
   padding: 12px 12px;
   border-bottom: 1px solid rgba(255,255,255,.10);
   background: rgba(0,0,0,.20);
+  flex-shrink: 0;
+  gap: 8px;
 }
 
 .docSheetTitle{
   font-weight: 900;
   font-size: 13px;
-  max-width: 55vw;
+  flex: 1;
+  min-width: 0;
   overflow:hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -393,9 +479,10 @@ body { height: calc(var(--vh) * 100);
 
 .docSheetActions{
   display:flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .btnPrimary, .btnGhost{
@@ -404,6 +491,14 @@ body { height: calc(var(--vh) * 100);
   border: 1px solid rgba(255,255,255,.14);
   font-weight: 900;
   padding: 0 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  /* FIX: Add button interaction */
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, background 0.15s ease;
 }
 
 .btnPrimary{
@@ -411,18 +506,30 @@ body { height: calc(var(--vh) * 100);
   color: rgba(255,255,255,.92);
 }
 
+.btnPrimary:active {
+  transform: scale(0.96);
+  background: rgba(77,163,255,.30);
+}
+
 .btnGhost{
   background: rgba(255,255,255,.10);
   color: rgba(255,255,255,.92);
 }
 
+.btnGhost:active {
+  transform: scale(0.96);
+  background: rgba(255,255,255,.18);
+}
+
 .docSheetBody{
-  padding: 12px 12px;
+  padding: 14px 14px;
   overflow:auto;
   -webkit-overflow-scrolling: touch;
   white-space: pre-wrap;
   font-size: 13px;
   line-height: 1.45;
+  flex: 1;
+  min-height: 0;
 }
 
 /* print: print doc body only */
@@ -445,5 +552,13 @@ body { height: calc(var(--vh) * 100);
     color:#000 !important;
     overflow: visible !important;
     font-size: 12pt !important;
+  }
+}
+
+/* FIX: Prevent overscroll on iOS */
+@supports (-webkit-touch-callout: none) {
+  body {
+    position: fixed;
+    width: 100%;
   }
 }
