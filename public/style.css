@@ -9,7 +9,7 @@
   --dark2: #1b1b1b;
   --bubble: #2a2a2a;
 
-  --accent: #f6c400; /* warm yellow like your reference */
+  --accent: #f6c400;
   --accent2:#ffd84a;
 
   --radius: 20px;
@@ -17,7 +17,7 @@
 
   --safeTop: env(safe-area-inset-top);
   --safeBot: env(safe-area-inset-bottom);
-  --vh: 1vh; /* gets overridden by JS on iOS */
+  --vh: 1vh;
 
   --shadow: 0 18px 50px rgba(0,0,0,.18);
   --shadow2: 0 10px 20px rgba(0,0,0,.14);
@@ -30,15 +30,16 @@ html, body { height: 100%; margin: 0; }
 body { 
   height: calc(var(--vh) * 100);
   font-family: var(--font);
-  overflow:hidden; /* no page scroll */
+  overflow:hidden;
   background:
     linear-gradient(0deg, var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px),
     var(--bg);
   background-size: 34px 34px;
   color: var(--text);
-  /* FIX: Remove default tap highlights on mobile */
   -webkit-tap-highlight-color: transparent;
+  position: fixed;
+  width: 100%;
 }
 
 .app {
@@ -46,121 +47,134 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative; /* FIX: Establish stacking context */
-}
-
-/* screens */
-.screen{
-  height:100%;
-  display:grid;
-  grid-template-rows: auto 1fr auto;
-  /* FIX: Remove duplicate padding that conflicts with .app */
   position: relative;
-  z-index: 1;
 }
 
-/* top bar */
+/* ========== SCREENS ========== */
+.screen{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--safeTop);
+  padding-bottom: var(--safeBot);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.screen:not([hidden]){
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ========== TOP BAR ========== */
 .topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 14px 14px 10px;
+  padding: 12px 16px;
   gap: 10px;
-  /* FIX: Ensure topbar is above content but below doc sheet */
-  position: relative;
-  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  flex-shrink: 0;
+  height: 64px;
 }
 
 .iconCircle{
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.8);
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size: 18px;
-  /* FIX: Add button interaction styles */
+  font-size: 16px;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, background 0.15s ease;
+  transition: transform 0.1s ease;
+  flex-shrink: 0;
 }
 
 .iconCircle:active {
-  transform: scale(0.95);
-  background: rgba(255,255,255,.95);
+  transform: scale(0.92);
 }
 
 .pill{
-  padding: 10px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.8);
-  box-shadow: 0 8px 20px rgba(0,0,0,.06);
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
   font-weight: 700;
-  max-width: 60vw;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
   overflow:hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
-/* HOME */
+/* ========== HOME SCREEN ========== */
 .homeMain{
+  flex: 1;
   min-height:0;
-  padding: 6px 14px 10px;
-  overflow-y: auto; /* FIX: Enable scrolling */
+  overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; /* FIX: Smooth scrolling on iOS */
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px 16px;
 }
 
 .homeTitle{
-  font-size: 34px;
-  line-height: 1.05;
+  font-size: 28px;
+  line-height: 1.1;
   font-weight: 900;
-  letter-spacing: -0.6px;
-  margin-top: 2px;
+  letter-spacing: -0.5px;
+  margin: 20px 0 8px;
 }
 
 .homeSubtitle{
   font-size: 14px;
   color: var(--muted);
-  max-width: 46ch;
+  margin-bottom: 20px;
+  line-height: 1.4;
 }
 
 .cta{
   border: none;
-  border-radius: 999px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 16px 20px;
   background: var(--accent);
   box-shadow: var(--shadow2);
   display:flex;
   align-items:center;
   justify-content:space-between;
   font-weight: 900;
-  font-size: 15px;
-  /* FIX: Add button interaction */
+  font-size: 16px;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform 0.1s ease;
+  margin-bottom: 24px;
+  width: 100%;
 }
 
 .cta:active {
   transform: scale(0.98);
-  box-shadow: 0 6px 15px rgba(0,0,0,.16);
 }
 
 .ctaArrow{
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   background: rgba(0,0,0,.85);
   color: white;
@@ -168,146 +182,172 @@ body {
   align-items:center;
   justify-content:center;
   font-weight: 900;
+  flex-shrink: 0;
 }
 
 .sectionRow{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin-top: 4px;
+  margin: 24px 0 12px;
 }
 
 .sectionLabel{
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
 }
 
+/* Horizontal scrolling chips */
 .chips{
   display:flex;
-  flex-wrap:wrap;
-  gap: 10px;
-  overflow:auto;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 2px;
-  min-height: 0;
+  padding-bottom: 8px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
 }
 
 .chip{
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.85);
-  box-shadow: 0 8px 18px rgba(0,0,0,.06);
-  font-weight: 800;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+  font-weight: 700;
   font-size: 13px;
-  /* FIX: Add button interaction */
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, background 0.15s ease;
   white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.1s ease;
 }
 
 .chip:active {
-  transform: scale(0.96);
-  background: rgba(255,255,255,.98);
+  transform: scale(0.95);
 }
 
+/* Vertical scrolling cards - 2 column grid */
 .cards{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  min-height:0;
-  overflow-y: auto; /* FIX: Enable scrolling */
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 }
 
 .cardTile{
-  border-radius: 22px;
-  padding: 14px;
-  border: 1px solid rgba(0,0,0,.10);
-  box-shadow: 0 10px 22px rgba(0,0,0,.08);
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
   display:flex;
   flex-direction:column;
   justify-content:space-between;
   min-height: 140px;
-  background: rgba(255,255,255,.85);
-}
-
-.cardTileTitle{
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: -0.2px;
-  line-height: 1.05;
-}
-
-.cardTileSub{
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 8px;
-}
-
-.tileBtn{
-  margin-top: 14px;
-  border:none;
-  border-radius: 999px;
-  padding: 12px 14px;
-  background: rgba(0,0,0,.90);
-  color: white;
-  font-weight: 900;
-  width: 100%;
-  /* FIX: Add button interaction */
+  background: rgba(255,255,255,.9);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, background 0.15s ease;
+  transition: transform 0.1s ease;
+}
+
+.cardTile:active {
+  transform: scale(0.97);
+}
+
+.cardTileTitle{
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.cardTileSub{
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.tileBtn{
+  margin-top: 12px;
+  border:none;
+  border-radius: 999px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,.90);
+  color: white;
+  font-weight: 800;
+  font-size: 12px;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.1s ease;
 }
 
 .tileBtn:active {
-  transform: scale(0.97);
-  background: rgba(0,0,0,1);
+  transform: scale(0.96);
 }
 
 .footer{
-  padding: 10px 14px 14px;
+  padding: 12px 16px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.4;
+  border-top: 1px solid rgba(0,0,0,.06);
+  background: var(--bg);
+  flex-shrink: 0;
 }
 
-/* CHAT */
+/* ========== CHAT SCREEN ========== */
 .chatMain{
+  flex: 1;
   min-height:0;
-  padding: 0 14px 10px;
-  overflow:hidden;
   display:flex;
   flex-direction:column;
-  position: relative; /* FIX: Establish stacking context for doc sheet */
-  z-index: 5;
+  overflow: hidden;
 }
 
 .chatTitle{
-  font-size: 30px;
-  line-height: 1.05;
-  font-weight: 950;
-  letter-spacing: -0.6px;
-  margin: 6px 0 10px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  background: var(--bg);
+  flex-shrink: 0;
 }
 
 .thread{
-  flex: 1 1 auto;
+  flex: 1;
   min-height:0;
-  overflow:auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 12px;
+  padding: 16px;
 }
 
 .msgRow{
   display:flex;
-  margin: 10px 0;
-  gap: 10px;
+  margin: 12px 0;
+  gap: 8px;
   align-items:flex-end;
 }
 
@@ -315,12 +355,12 @@ body {
 .msgRow.me{ justify-content:flex-end; }
 
 .bubble{
-  max-width: 78%;
-  border-radius: 18px;
-  padding: 12px 13px;
+  max-width: 75%;
+  border-radius: 16px;
+  padding: 12px 14px;
   font-size: 14px;
-  line-height: 1.25;
-  box-shadow: 0 10px 22px rgba(0,0,0,.18);
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -328,41 +368,41 @@ body {
 .bubble.bot{
   background: #1d1d1d;
   color: rgba(255,255,255,.92);
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.06);
 }
 
 .bubble.me{
   background: white;
   color: #111;
-  border: 1px solid rgba(0,0,0,.10);
+  border: 1px solid rgba(0,0,0,.08);
 }
 
 .meta{
-  font-size: 11px;
-  color: rgba(255,255,255,.70);
-  margin-left: 6px;
+  font-size: 10px;
+  color: rgba(255,255,255,.60);
+  margin-left: 4px;
 }
 
 .me .meta{
-  color: rgba(0,0,0,.45);
+  color: rgba(0,0,0,.40);
 }
 
-/* composer */
+/* ========== COMPOSER ========== */
 .composer{
-  padding: 10px 14px 14px;
-  background: transparent;
-  /* FIX: Ensure composer stays above thread */
-  position: relative;
-  z-index: 20;
+  padding: 12px 16px;
+  padding-bottom: calc(12px + var(--safeBot));
+  background: var(--bg);
+  border-top: 1px solid rgba(0,0,0,.06);
+  flex-shrink: 0;
 }
 
 .composerInner{
   background: var(--dark);
-  border-radius: 26px;
-  padding: 10px;
-  box-shadow: var(--shadow);
+  border-radius: 24px;
+  padding: 8px;
+  box-shadow: var(--shadow2);
   display:flex;
-  gap: 10px;
+  gap: 8px;
   align-items:flex-end;
 }
 
@@ -375,101 +415,104 @@ body {
   width: 100%;
   border: none;
   outline:none;
-  border-radius: 18px;
-  padding: 14px 14px;
+  border-radius: 16px;
+  padding: 12px 14px;
   background: #111;
   color: rgba(255,255,255,.92);
-  font-size: 14px;
-  font-family: var(--font);
-  /* FIX: Prevent iOS zoom on input focus */
   font-size: 16px;
+  font-family: var(--font);
+  line-height: 1.4;
 }
 
 #userTextarea{
   display:none;
   resize:none;
-  max-height: 120px;
+  max-height: 100px;
+  min-height: 44px;
 }
 
 #userInput::placeholder, #userTextarea::placeholder{
-  color: rgba(255,255,255,.52);
+  color: rgba(255,255,255,.50);
 }
 
 .errorText{
-  min-height: 16px;
-  margin-top: 6px;
-  font-size: 12px;
+  min-height: 14px;
+  margin-top: 4px;
+  font-size: 11px;
   color: rgba(255, 180, 180, .95);
-  padding: 0 4px;
+  padding: 0 6px;
 }
 
 .iconPlus{
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: none;
   background: var(--accent);
-  box-shadow: 0 12px 24px rgba(0,0,0,.25);
+  box-shadow: 0 6px 16px rgba(0,0,0,.2);
   font-weight: 900;
   font-size: 18px;
   display:flex;
   align-items:center;
   justify-content:center;
   flex-shrink: 0;
-  /* FIX: Add button interaction */
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform 0.1s ease;
 }
 
 .iconPlus:active {
-  transform: scale(0.94);
-  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+  transform: scale(0.92);
 }
 
 .iconPlus:disabled{
-  opacity: .55;
+  opacity: .4;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-/* doc sheet overlay */
+/* ========== DOCUMENT PREVIEW (FULLSCREEN MODAL) ========== */
 .docSheet{
-  position:fixed; /* FIX: Changed from absolute to fixed for better positioning */
-  left: 14px;
-  right: 14px;
-  top: calc(74px + var(--safeTop)); /* FIX: Account for safe area */
-  bottom: calc(98px + var(--safeBot)); /* FIX: Account for safe area */
-  border-radius: 24px;
-  background: rgba(20,20,20,.98); /* FIX: Slightly more opaque */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(20,20,20,.98);
   color: rgba(255,255,255,.92);
-  box-shadow: 0 22px 55px rgba(0,0,0,.45);
-  overflow:hidden;
   display:flex;
   flex-direction:column;
-  z-index: 100; /* FIX: Ensure doc sheet is above everything */
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
-.docSheet[hidden]{ 
-  display:none !important; 
+.docSheet:not([hidden]){
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .docSheetTop{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 12px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.20);
+  padding: 12px 16px;
+  padding-top: calc(12px + var(--safeTop));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.3);
   flex-shrink: 0;
-  gap: 8px;
+  gap: 12px;
+  min-height: 64px;
 }
 
 .docSheetTitle{
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   flex: 1;
   min-width: 0;
   overflow:hidden;
@@ -480,85 +523,84 @@ body {
 .docSheetActions{
   display:flex;
   gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   flex-shrink: 0;
 }
 
 .btnPrimary, .btnGhost{
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.14);
-  font-weight: 900;
-  padding: 0 12px;
-  font-size: 13px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  font-weight: 800;
+  padding: 0 14px;
+  font-size: 12px;
   white-space: nowrap;
-  /* FIX: Add button interaction */
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  transition: transform 0.1s ease, background 0.15s ease;
+  transition: transform 0.1s ease;
 }
 
 .btnPrimary{
-  background: rgba(77,163,255,.20);
-  color: rgba(255,255,255,.92);
+  background: rgba(77,163,255,.25);
+  color: rgba(255,255,255,.95);
 }
 
 .btnPrimary:active {
-  transform: scale(0.96);
-  background: rgba(77,163,255,.30);
+  transform: scale(0.95);
 }
 
 .btnGhost{
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.08);
   color: rgba(255,255,255,.92);
 }
 
 .btnGhost:active {
-  transform: scale(0.96);
-  background: rgba(255,255,255,.18);
+  transform: scale(0.95);
 }
 
 .docSheetBody{
-  padding: 14px 14px;
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: pre-wrap;
-  font-size: 13px;
-  line-height: 1.45;
   flex: 1;
   min-height: 0;
+  padding: 20px;
+  padding-bottom: calc(20px + var(--safeBot));
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-/* print: print doc body only */
+/* ========== PRINT STYLES ========== */
 @media print{
-  body{ overflow: visible; background: #fff !important; }
+  body{ 
+    overflow: visible; 
+    background: #fff !important;
+    position: static;
+    width: auto;
+  }
   .screen{ display:none !important; }
-  #chatScreen{ display:block !important; height:auto !important; }
+  #chatScreen{ display:block !important; }
   .topbar, .chatTitle, .thread, .composer{ display:none !important; }
   .docSheet{
     position: static !important;
-    left:auto !important; right:auto !important; top:auto !important; bottom:auto !important;
     display:block !important;
     background: transparent !important;
     color:#000 !important;
     box-shadow:none !important;
-    border-radius:0 !important;
+    opacity: 1 !important;
   }
   .docSheetTop{ display:none !important; }
   .docSheetBody{
     color:#000 !important;
     overflow: visible !important;
-    font-size: 12pt !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
   }
 }
 
-/* FIX: Prevent overscroll on iOS */
-@supports (-webkit-touch-callout: none) {
-  body {
-    position: fixed;
-    width: 100%;
-  }
+/* ========== UTILITY ========== */
+[hidden] {
+  display: none !important;
 }
