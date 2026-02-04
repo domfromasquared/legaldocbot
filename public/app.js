@@ -1,3 +1,13 @@
+(function setRealVh(){
+  function apply(){
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
+  }
+  apply();
+  window.addEventListener("resize", apply, { passive: true });
+  window.addEventListener("orientationchange", apply, { passive: true });
+})();
+
 // ===============================
 //  Legal Doc Bot — 10 doc types
 //  UI: home -> chat thread -> doc sheet
