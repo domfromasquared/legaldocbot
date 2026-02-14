@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <title>Legal Doc Bot</title>
+  <link rel="stylesheet" href="/public/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- HOME SCREEN -->
+    <section class="screen" id="homeScreen">
+      <header class="topbar">
+        <button type="button" class="iconCircle" id="homeMenuBtn" aria-label="Menu">≡</button>
+        <div class="pill">Legal Doc Bot</div>
+        <button type="button" class="iconCircle" id="newChatBtn" aria-label="New">✎</button>
+      </header>
+
+      <main class="homeMain">
+        <div class="homeTitle">Create a legal document draft</div>
+        <div class="homeSubtitle">Answer a few questions. Get a printable draft.</div>
+
+        <button type="button" class="cta" id="startBtn">
+          <span>New Draft</span>
+          <span class="ctaArrow">→</span>
+        </button>
+
+        <div class="sectionRow">
+          <div class="sectionLabel">Document types</div>
+        </div>
+
+        <div class="chips" id="docTypeChips"></div>
+
+        <div class="sectionRow">
+          <div class="sectionLabel">Popular</div>
+        </div>
+
+        <div class="cards" id="popularCards"></div>
+      </main>
+
+      <footer class="footer">
+        Drafts are template-based. For complex situations, consult a qualified attorney.
+      </footer>
+    </section>
+
+    <!-- CHAT SCREEN -->
+    <section class="screen" id="chatScreen" hidden>
+      <header class="topbar">
+        <button type="button" class="iconCircle" id="backBtn" aria-label="Back">←</button>
+        <div class="pill" id="chatTitlePill">Draft</div>
+        <button type="button" class="iconCircle" id="restartBtn" aria-label="Restart">↻</button>
+      </header>
+
+      <main class="chatMain">
+        <div class="chatTitle" id="chatTitle">What do you want to draft?</div>
+
+        <div class="thread" id="thread" aria-live="polite"></div>
+
+        <!-- DOC PREVIEW SHEET -->
+        <section class="docSheet" id="docPreview" hidden>
+          <div class="docSheetTop">
+            <div class="docSheetTitle" id="docTitle"></div>
+            <div class="docSheetActions">
+              <button type="button" id="downloadBtn" class="btnPrimary">Download</button>
+              <button type="button" id="printBtn" class="btnGhost">Print</button>
+              <button type="button" id="closeDocBtn" class="btnGhost">Close</button>
+            </div>
+          </div>
+          <div class="docSheetBody" id="docBody"></div>
+        </section>
+      </main>
+
+      <footer class="composer">
+        <div class="composerInner">
+          <div class="fieldWrap">
+            <input id="userInput" type="text" placeholder="Type here…" autocomplete="off" />
+            <textarea id="userTextarea" rows="3" placeholder="Type here…"></textarea>
+            <div class="errorText" id="errorText"></div>
+          </div>
+          <button type="button" id="micBtn" class="iconPlus" title="Hold to talk" aria-label="Voice">🎙️</button>
+          <button type="button" id="sendBtn" class="iconPlus" aria-label="Send">→</button>
+        </div>
+      </footer>
+    </section>
+
+  </div>
+
+  <script src="/public/app.js"></script>
+</body>
+</html>
