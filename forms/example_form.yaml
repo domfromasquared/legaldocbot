@@ -1,0 +1,57 @@
+{
+  "id": "example_form",
+  "title": "Example Intake Form",
+  "jurisdiction": "US-General",
+  "version": "1.0.0",
+  "description": "Example schema showing required, conditional, and validation rules.",
+  "fields": [
+    {
+      "key": "full_name",
+      "label": "Your legal full name",
+      "type": "string",
+      "required": true,
+      "help": "Enter the name exactly as shown on your legal ID.",
+      "examples": ["Jane Q. Public"],
+      "pattern": "^[A-Za-z ,.'-]{2,100}$"
+    },
+    {
+      "key": "email",
+      "label": "Email address",
+      "type": "string",
+      "required": true,
+      "help": "We use this only for document follow-up.",
+      "examples": ["jane@example.com"],
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+    },
+    {
+      "key": "has_coapplicant",
+      "label": "Do you have a co-applicant?",
+      "type": "boolean",
+      "required": true,
+      "help": "Answer yes if another person is jointly applying.",
+      "examples": [true, false]
+    },
+    {
+      "key": "coapplicant_name",
+      "label": "Co-applicant legal full name",
+      "type": "string",
+      "required": false,
+      "show_if": { "key": "has_coapplicant", "equals": true },
+      "required_if": { "key": "has_coapplicant", "equals": true },
+      "examples": ["John Public"],
+      "pattern": "^[A-Za-z ,.'-]{2,100}$"
+    },
+    {
+      "key": "filing_type",
+      "label": "Filing type",
+      "type": "string",
+      "required": true,
+      "enum": ["standard", "expedited"],
+      "help": "Choose expedited only when statute allows it.",
+      "examples": ["standard"]
+    }
+  ],
+  "validation": {
+    "forbid_unknown_fields": true
+  }
+}
