@@ -327,6 +327,8 @@ let audioChunks = [];
 let schemaMode = false;
 let schemaNextField = null;
 let schemaFormCatalog = new Map();
+let typingIndicatorCount = 0;
+let typingRowEl = null;
 
 // ---------------- navigation ----------------
 function showHome(){
@@ -368,6 +370,7 @@ function downloadDoc(){
 function addMsg(role, text){
   const row = document.createElement("div");
   row.className = `msgRow ${role}`;
+  row.classList.add("msgIn");
 
   const bubble = document.createElement("div");
   bubble.className = `bubble ${role}`;
@@ -376,6 +379,40 @@ function addMsg(role, text){
   row.appendChild(bubble);
   thread.appendChild(row);
   thread.scrollTop = thread.scrollHeight;
+  requestAnimationFrame(() => row.classList.remove("msgIn"));
+}
+
+function showTypingIndicator(){
+  typingIndicatorCount += 1;
+  if (typingRowEl) return;
+
+  const row = document.createElement("div");
+  row.className = "msgRow bot typing msgIn";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot";
+
+  const dots = document.createElement("div");
+  dots.className = "typingDots";
+  dots.setAttribute("aria-label", "Assistant is typing");
+  dots.innerHTML = "<span></span><span></span><span></span>";
+
+  bubble.appendChild(dots);
+  row.appendChild(bubble);
+  thread.appendChild(row);
+  thread.scrollTop = thread.scrollHeight;
+  typingRowEl = row;
+
+  requestAnimationFrame(() => row.classList.remove("msgIn"));
+}
+
+function hideTypingIndicator(){
+  typingIndicatorCount = Math.max(0, typingIndicatorCount - 1);
+  if (typingIndicatorCount > 0) return;
+  if (!typingRowEl) return;
+
+  typingRowEl.remove();
+  typingRowEl = null;
 }
 
 function setError(msg){
@@ -413,6 +450,7 @@ function updateProgressHint(progress){
 }
 
 async function aiAsk(messages){
+  showTypingIndicator();
   try{
     const res = await fetch("/api/respond", {
       method: "POST",
@@ -424,6 +462,8 @@ async function aiAsk(messages){
     return data.output_text || "";
   }catch{
     return "";
+  }finally{
+    hideTypingIndicator();
   }
 }
 
@@ -446,20 +486,25 @@ async function fetchFormsCatalog(){
 }
 
 async function aiSchemaTurn({ userText }){
-  const payload = {
-    form_id: selectedTemplateKey,
-    answers,
-    messages: [{ role: "user", content: userText }]
-  };
+  showTypingIndicator();
+  try{
+    const payload = {
+      form_id: selectedTemplateKey,
+      answers,
+      messages: [{ role: "user", content: userText }]
+    };
 
-  const res = await fetch("/api/respond", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    const res = await fetch("/api/respond", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) throw new Error("Schema AI error");
-  return await res.json();
+    if (!res.ok) throw new Error("Schema AI error");
+    return await res.json();
+  }finally{
+    hideTypingIndicator();
+  }
 }
 
 async function transcribeAudio(blob){
@@ -579,6 +624,8 @@ function resetDraft(){
   schemaMode = false;
   schemaNextField = null;
   thread.innerHTML = "";
+  typingRowEl = null;
+  typingIndicatorCount = 0;
   chatTitle.textContent = "Pick a document type";
   chatTitlePill.textContent = "Draft";
   setError("");
@@ -685,6 +732,8 @@ async function startDraft(key){
   answers = {};
   schemaNextField = null;
   thread.innerHTML = "";
+  typingRowEl = null;
+  typingIndicatorCount = 0;
   closeDoc();
 
   const tmpl = TEMPLATES[key];
