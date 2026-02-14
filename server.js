@@ -18,6 +18,7 @@ app.use(express.json({ limit: "1mb" }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/public", express.static(path.join(__dirname, "public")));
 
 const PORT = process.env.PORT || 3000;
@@ -90,14 +91,6 @@ function isLegalAdviceRequest(text) {
 }
 
 // ---------- Routes ----------
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
-app.get("/index.html", (_req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
 app.use(rateLimit);
 
 app.get("/api/forms", (req, res) => {
