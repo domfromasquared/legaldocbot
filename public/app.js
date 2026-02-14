@@ -25,7 +25,8 @@ const DOC_TYPES = [
   { key: "will_simple", label: "Last Will & Testament" },
   { key: "nda_mutual", label: "Mutual NDA" },
   { key: "contractor_simple", label: "Independent Contractor Agreement" },
-  { key: "llc_operating_agreement_simple", label: "LLC Operating Agreement" }
+  { key: "llc_operating_agreement_simple", label: "LLC Operating Agreement" },
+  { key: "example_form", label: "Example Intake Form" }
 ];
 
 // ---------------- Templates (same as before, truncated here for brevity) ----------------
@@ -323,6 +324,9 @@ let fieldIndex = 0;
 let answers = {};
 let mediaRecorder = null;
 let audioChunks = [];
+let schemaMode = false;
+let schemaNextField = null;
+let schemaFormCatalog = new Map();
 
 // ---------------- navigation ----------------
 function showHome(){
@@ -378,6 +382,36 @@ function setError(msg){
   errorText.textContent = msg;
 }
 
+function selectedDocLabel(){
+  const item = DOC_TYPES.find((d) => d.key === selectedTemplateKey);
+  return item ? item.label : "Document";
+}
+
+function normalizeByFieldType(field, raw){
+  const val = (field.type === "address" || field.type === "paragraph") ? multiLine(raw) : oneLine(raw);
+
+  if (field.type === "boolean"){
+    const n = val.toLowerCase();
+    if (["yes", "true", "y", "1"].includes(n)) return true;
+    if (["no", "false", "n", "0"].includes(n)) return false;
+  }
+  if (field.type === "integer" || field.type === "int"){
+    if (/^-?\d+$/.test(val)) return parseInt(val, 10);
+  }
+  if (field.type === "number"){
+    if (/^-?\d+(\.\d+)?$/.test(val)) return parseFloat(val);
+  }
+
+  return val;
+}
+
+function updateProgressHint(progress){
+  if (!progress || typeof progress !== "object") return;
+  const total = progress.total || 0;
+  const filled = progress.filled || 0;
+  if (total > 0) setError(`Progress: ${filled}/${total} fields complete.`);
+}
+
 async function aiAsk(messages){
   try{
     const res = await fetch("/api/respond", {
@@ -393,6 +427,41 @@ async function aiAsk(messages){
   }
 }
 
+async function fetchFormsCatalog(){
+  try{
+    const res = await fetch("/api/forms");
+    if (!res.ok) return;
+    const data = await res.json();
+    const forms = Array.isArray(data.forms) ? data.forms : [];
+
+    schemaFormCatalog = new Map(forms.map((f) => [f.id, f]));
+    for (const f of forms){
+      if (!DOC_TYPES.some((d) => d.key === f.id)){
+        DOC_TYPES.push({ key: f.id, label: f.title || f.id });
+      }
+    }
+  }catch{
+    schemaFormCatalog = new Map();
+  }
+}
+
+async function aiSchemaTurn({ userText }){
+  const payload = {
+    form_id: selectedTemplateKey,
+    answers,
+    messages: [{ role: "user", content: userText }]
+  };
+
+  const res = await fetch("/api/respond", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) throw new Error("Schema AI error");
+  return await res.json();
+}
+
 async function transcribeAudio(blob){
   const form = new FormData();
   form.append("audio", blob, "recording.webm");
@@ -405,6 +474,7 @@ async function transcribeAudio(blob){
 
 // ---------------- field logic ----------------
 function activeField(){
+  if (schemaMode) return schemaNextField;
   const tmpl = TEMPLATES[selectedTemplateKey];
   return tmpl && tmpl.fields[fieldIndex];
 }
@@ -441,9 +511,21 @@ function multiLine(s){ return s.replace(/\s{2,}/g, " ").trim(); }
 function validateField(field, raw){
   if (!field) return "";
   if (field.required && !raw) return `${field.label} is required.`;
+
+  if (field.type === "boolean"){
+    const v = raw.toLowerCase();
+    if (!["yes", "no", "true", "false", "y", "n", "1", "0"].includes(v)) return "Enter yes/no.";
+  }
   
-  if (field.type === "int"){
+  if (field.type === "int" || field.type === "integer"){
     const n = parseInt(raw, 10);
+    if (isNaN(n)) return "Enter a valid number.";
+    if (field.min != null && n < field.min) return `Min: ${field.min}`;
+    if (field.max != null && n > field.max) return `Max: ${field.max}`;
+  }
+
+  if (field.type === "number"){
+    const n = parseFloat(raw);
     if (isNaN(n)) return "Enter a valid number.";
     if (field.min != null && n < field.min) return `Min: ${field.min}`;
     if (field.max != null && n > field.max) return `Max: ${field.max}`;
@@ -463,6 +545,21 @@ function validateField(field, raw){
     return `Minimum ${field.minLen} characters.`;
   }
 
+  if (field.min_length && raw.length < field.min_length){
+    return `Minimum ${field.min_length} characters.`;
+  }
+
+  if (field.pattern){
+    try{
+      const re = new RegExp(field.pattern);
+      if (!re.test(raw)) return "Invalid format.";
+    }catch{}
+  }
+
+  if (Array.isArray(field.enum) && !field.enum.includes(raw)){
+    return `Use one of: ${field.enum.join(", ")}`;
+  }
+
   return "";
 }
 
@@ -479,6 +576,8 @@ function resetDraft(){
   selectedTemplateKey = null;
   fieldIndex = 0;
   answers = {};
+  schemaMode = false;
+  schemaNextField = null;
   thread.innerHTML = "";
   chatTitle.textContent = "Pick a document type";
   chatTitlePill.textContent = "Draft";
@@ -528,7 +627,7 @@ function buildHomeUI(){
 
     const btn = document.createElement("button");
     btn.className = "tileBtn";
-    btn.textContent = "Use this";
+    btn.textContent = "Get started";
 
     tile.appendChild(h);
     tile.appendChild(p);
@@ -538,6 +637,28 @@ function buildHomeUI(){
 }
 
 function askCurrentField(){
+  if (schemaMode){
+    const field = schemaNextField;
+    if (!field) return;
+
+    setFieldUI(field);
+
+    let prompt = `${field.label}:`;
+    if (field.help) prompt += ` ${field.help}`;
+    if (Array.isArray(field.examples) && field.examples.length){
+      prompt += ` Example: ${String(field.examples[0])}`;
+    }
+
+    addMsg("bot", prompt);
+
+    setTimeout(() => {
+      if (field.type === "address" || field.type === "paragraph") userTextarea.focus();
+      else userInput.focus();
+      refreshValidationUI();
+    }, 0);
+    return;
+  }
+
   const tmpl = TEMPLATES[selectedTemplateKey];
   const field = tmpl.fields[fieldIndex];
   if (!field) return;
@@ -562,18 +683,44 @@ async function startDraft(key){
   selectedTemplateKey = key;
   fieldIndex = 0;
   answers = {};
+  schemaNextField = null;
   thread.innerHTML = "";
   closeDoc();
 
   const tmpl = TEMPLATES[key];
-  chatTitle.textContent = tmpl.label;
-  chatTitlePill.textContent = tmpl.label;
+  const label = tmpl?.label || selectedDocLabel();
+  schemaMode = schemaFormCatalog.has(key);
+  chatTitle.textContent = label;
+  chatTitlePill.textContent = label;
 
   showChat();
 
-  let opener = `Okay — ${tmpl.label}. I'll ask a few questions and generate a printable draft.`;
+  if (schemaMode){
+    let opener = `Okay — ${label}. I'll ask short questions and fill this form step by step.`;
+    try{
+      const turn = await aiSchemaTurn({ userText: `Start the ${label} interview and ask the first required question.` });
+      if (turn.output_text) opener = turn.output_text;
+      answers = turn.answers || {};
+      schemaNextField = turn.next_field || null;
+      updateProgressHint(turn.progress);
+      if (Array.isArray(turn.validation_errors) && turn.validation_errors.length){
+        const firstErr = turn.validation_errors[0];
+        setError(`${firstErr.key}: ${firstErr.message}`);
+      }
+    }catch{}
+
+    addMsg("bot", opener);
+    if (!schemaNextField){
+      addMsg("bot", "This form is complete.");
+    }else if (!opener.includes(schemaNextField.label)){
+      askCurrentField();
+    }
+    return;
+  }
+
+  let opener = `Okay — ${label}. I'll ask a few questions and generate a printable draft.`;
   try{
-    const ai = await aiAsk([{ role:"user", content:`In one short sentence, confirm we are drafting a ${tmpl.label} and say you'll ask a few questions. Avoid legal advice.` }]);
+    const ai = await aiAsk([{ role:"user", content:`In one short sentence, confirm we are drafting a ${label} and say you'll ask a few questions. Avoid legal advice.` }]);
     if (ai) opener = ai;
   }catch{}
 
@@ -582,6 +729,50 @@ async function startDraft(key){
 }
 
 async function submitCurrent(){
+  if (schemaMode){
+    const field = activeField();
+    if (!field) return;
+
+    const raw = getCurrentValue();
+    const err = validateField(field, raw);
+    if (err){ setError(err); sendBtn.disabled = true; return; }
+
+    const normalized = normalizeByFieldType(field, raw);
+    addMsg("me", String(normalized));
+
+    try{
+      const userText = `Field "${field.key}" value: ${JSON.stringify(normalized)}.`;
+      const turn = await aiSchemaTurn({ userText });
+
+      answers = turn.answers || answers;
+      schemaNextField = turn.next_field || null;
+
+      if (Array.isArray(turn.validation_errors) && turn.validation_errors.length){
+        const firstErr = turn.validation_errors[0];
+        setError(`${firstErr.key}: ${firstErr.message}`);
+      }else{
+        setError("");
+      }
+
+      updateProgressHint(turn.progress);
+
+      if (turn.output_text) addMsg("bot", turn.output_text);
+
+      if (!schemaNextField){
+        addMsg("bot", "All required fields are complete.");
+        openDoc(`${selectedDocLabel()} (Collected Answers)`, JSON.stringify(answers, null, 2));
+        return;
+      }
+
+      if (!turn.output_text || !turn.output_text.includes(schemaNextField.label)){
+        askCurrentField();
+      }
+    }catch{
+      setError("Could not process that answer. Please try again.");
+    }
+    return;
+  }
+
   const tmpl = TEMPLATES[selectedTemplateKey];
   const field = activeField();
   if (!tmpl || !field) return;
@@ -684,5 +875,10 @@ const downloadBtn = document.getElementById("downloadBtn");
 if (downloadBtn) downloadBtn.addEventListener("click", downloadDoc);
 
 // ---------------- init ----------------
-buildHomeUI();
-showHome();
+async function init(){
+  await fetchFormsCatalog();
+  buildHomeUI();
+  showHome();
+}
+
+init();
